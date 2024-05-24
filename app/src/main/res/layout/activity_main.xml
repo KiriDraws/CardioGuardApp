@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <Button
+        android:id="@+id/buttonConnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Connect"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:id="@+id/textStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Status: Disconnected"
+        android:layout_below="@id/buttonConnect"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"/>
+
+    <!-- TextView to display EKG data -->
+    <TextView
+        android:id="@+id/ekgData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="EKG Data"
+        android:layout_below="@id/textStatus"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"/>
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Your other views here -->
+
+    <!-- ImageView for the logo -->
+    <ImageView
+        android:id="@+id/imageViewLogo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/cardioguard"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp" /> <!-- Adjust margin as needed -->
+
+
+</RelativeLayout>
