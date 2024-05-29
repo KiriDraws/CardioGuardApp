@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Definițiile stilurilor -->
+    <style name="Theme.CardioGuard" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Personalizează tema aici -->
+
+    </style>
+</resources>

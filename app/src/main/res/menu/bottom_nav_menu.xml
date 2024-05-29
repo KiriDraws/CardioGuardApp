@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/pencil"
+        android:title="Home"
+        app:showAsAction="ifRoom|withText" />
+    <item
+        android:id="@+id/navigation_recommendations"
+        android:icon="@drawable/pencil"
+        android:title="Recomandări"
+        app:showAsAction="ifRoom|withText" />
+    <item
+        android:id="@+id/navigation_management_table"
+        android:title="Tabel de gestiune"
+        android:icon="@drawable/pencil"
+        app:showAsAction="ifRoom|withText" />
+
+</menu>

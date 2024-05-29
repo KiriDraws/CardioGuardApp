@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center">
+
+    <EditText
+        android:id="@+id/editTextLastName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nume de familie"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/editTextFirstName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Prenume"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/editTextCNP"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="CNP"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/editTextUsername"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nume de utilizator"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/editTextPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Parola"
+        android:inputType="textPassword" />
+
+    <EditText
+        android:id="@+id/editTextConfirmPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Confirmă parola"
+        android:inputType="textPassword" />
+
+
+    <RadioGroup
+        android:id="@+id/radioGroupAccountType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/radioButtonMedic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Medic" />
+
+        <RadioButton
+            android:id="@+id/radioButtonPacient"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pacient" />
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/buttonRegister"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Inregistrare" />
+</LinearLayout>

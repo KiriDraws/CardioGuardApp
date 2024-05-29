@@ -1,12 +1,13 @@
 package com.example.cardioguard
 
 import android.Manifest
+import android.widget.Toast
+import android.content.SharedPreferences
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.widget.Button
@@ -16,14 +17,24 @@ import androidx.core.content.ContextCompat
 import java.io.IOException
 import java.io.InputStream
 import java.util.UUID
-import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import org.json.JSONObject
+import android.os.Build
+import android.view.View
+import android.widget.ImageView
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import androidx.fragment.app.Fragment
+import androidx.appcompat.app.AppCompatActivity
+import com.example.cardioguard.ui.theme.home.HomeFragment
+import com.example.cardioguard.ui.theme.recommendations.RecommendationsFragment
+import com.bumptech.glide.Glide
+import java.text.SimpleDateFormat
+import java.util.*
 
+class MainActivity : AppCompatActivity() {
 
-class MainActivity : Activity() {
-
+    private lateinit var sharedPreferences: SharedPreferences
     private val DEVICE_ADDRESS = "00:23:02:34:DC:96"
     private val MY_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
     private val REQUEST_ENABLE_BLUETOOTH = 1
@@ -38,6 +49,8 @@ class MainActivity : Activity() {
     private lateinit var buttonConnect: Button
     private lateinit var textStatus: TextView
     private lateinit var ekgData: TextView
+    private lateinit var ekgGif: ImageView
+    private lateinit var pulseDataTextView: TextView
 
     private val handler = Handler()
     private val readRunnable = object : Runnable {
@@ -48,14 +61,20 @@ class MainActivity : Activity() {
     }
 
     private var pulseValues = mutableListOf<String>()
+    private var collectedPulseData = mutableListOf<String>()
+    private var startTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        sharedPreferences = getSharedPreferences("loginPrefs", MODE_PRIVATE)
+        val accountType = sharedPreferences.getString("accountType", "")
 
         buttonConnect = findViewById(R.id.buttonConnect)
         textStatus = findViewById(R.id.textStatus)
         ekgData = findViewById(R.id.ekgData)
+        ekgGif = findViewById(R.id.ekgGif)
+        pulseDataTextView = findViewById(R.id.pulseData)
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
@@ -64,6 +83,37 @@ class MainActivity : Activity() {
                 checkBluetoothEnabled()
             } else {
                 requestBluetoothPermission()
+            }
+        }
+
+        // Setup bottom navigation
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        if (accountType == "Medic") {
+            bottomNavigationView.menu.findItem(R.id.navigation_management_table).isVisible = true
+        } else {
+            bottomNavigationView.menu.findItem(R.id.navigation_management_table).isVisible = false
+        }
+        bottomNavigationView.setOnNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.navigation_home -> {
+                    openFragment(HomeFragment())
+                    true
+                }
+                R.id.navigation_recommendations -> {
+                    openFragment(RecommendationsFragment())
+                    true
+                }
+                R.id.navigation_management_table -> {
+                    if (accountType == "Medic") {
+                        openFragment(ManagementTableFragment())
+                        true
+                    } else {
+                        Toast.makeText(this, "Access denied", Toast.LENGTH_SHORT).show()
+                        false
+                    }
+                }
+
+                else -> false
             }
         }
     }
@@ -109,37 +159,12 @@ class MainActivity : Activity() {
         bluetoothDevice = bluetoothAdapter?.getRemoteDevice(DEVICE_ADDRESS)
 
         try {
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return
-            }
             bluetoothSocket = bluetoothDevice?.createRfcommSocketToServiceRecord(MY_UUID)
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return
-            }
             bluetoothSocket?.connect()
             textStatus.text = "Status: Connected"
+            ekgGif.visibility = View.VISIBLE
+            // Load the GIF using Glide
+            Glide.with(this).asGif().load(R.drawable.ekg).into(ekgGif)
             inputStream = bluetoothSocket?.inputStream
             startReadingData()
         } catch (e: IOException) {
@@ -155,11 +180,12 @@ class MainActivity : Activity() {
 
     private fun startReadingData() {
         handler.postDelayed(readRunnable, READ_DELAY_MILLISECONDS)
+        startTime = System.currentTimeMillis()
     }
 
     private fun readDataFromBluetooth() {
         val buffer = ByteArray(1024)
-        val bytes: Int
+        var bytes: Int
         val dataBuilder = StringBuilder()
         try {
             bytes = inputStream?.read(buffer) ?: 0
@@ -184,26 +210,47 @@ class MainActivity : Activity() {
                 // Remove the processed values from the list
                 pulseValues = pulseValues.subList(1, pulseValues.size)
             }
+
+            // Check if 3 second has passed to collect and display pulse data
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - startTime >= 3000L) {
+                saveAndDisplayPulseData()
+                startTime = currentTime
+            }
+
         } catch (e: IOException) {
             e.printStackTrace()
         }
     }
 
-    private fun processPulseGroup(group: List<String>) {
-        // Here, you can do whatever you need with the group of 10 pulse values
-        // For example, you can update the UI to display them
+    private var pulseIndex = 0
 
+    private fun processPulseGroup(group: List<String>) {
         val lastTwoChars = group.last().takeLast(3)
-        // Display last two characters
         val lastTwoCharsText = "Pulse: $lastTwoChars"
         ekgData.text = lastTwoCharsText
-
-        // Send pulse data to the server
-        sendPulseDataToServer(lastTwoChars)
-
+        sendPulseDataToServer(lastTwoChars, pulseIndex)
+        pulseIndex++
     }
-    private fun sendPulseDataToServer(pulse: String) {
-        val urlString = "http://localhost:3000/pulseData"  // replace with your server URL
+
+    private fun saveAndDisplayPulseData() {
+        val pulseValue = ekgData.text.takeLast(3) // Extract pulse value from ekgData TextView
+        val currentTime = System.currentTimeMillis()
+        val formattedDateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(currentTime))
+        val pulseData = if (collectedPulseData.isEmpty()) {
+            // For the first set of pulse values, display the timestamp as a title
+            "Pulse values readed at $formattedDateTime: $pulseValue"
+        } else {
+            // For subsequent sets of pulse values, only display the pulse values in a single row
+            "$pulseValue"
+        }
+        collectedPulseData.add(pulseData)
+        pulseDataTextView.text = collectedPulseData.joinToString(separator = ", ", prefix = "", postfix = "") // Join pulse values with comma
+    }
+
+
+    private fun sendPulseDataToServer(pulse: String, index: Int) {
+        val urlString = "http://192.168.1.138:3000/pulseData"
 
         Thread {
             try {
@@ -215,6 +262,7 @@ class MainActivity : Activity() {
                 connection.doOutput = true
 
                 val jsonInputString = JSONObject()
+                jsonInputString.put("id", index)
                 jsonInputString.put("pulse", pulse)
 
                 connection.outputStream.use { os ->
@@ -228,14 +276,28 @@ class MainActivity : Activity() {
                 if (responseCode == HttpURLConnection.HTTP_OK) { // success
                     println("POST request worked")
                 } else {
-                    println("POST request did not work")
+                    println("POST request did not work, Response Code: $responseCode")
                 }
+
+                connection.inputStream.use {
+                    val response = it.bufferedReader().use { reader -> reader.readText() }
+                    println("Response: $response")
+                }
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }.start()
     }
 
+
+
+    private fun openFragment(fragment: Fragment) {
+        val transaction = supportFragmentManager.beginTransaction()
+        transaction.replace(R.id.fragment_container, fragment)
+        transaction.addToBackStack(null)
+        transaction.commit()
+    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
