@@ -87,7 +87,7 @@ class LoginActivity : AppCompatActivity() {
 
         override fun onPostExecute(token: String?) {
             if (token != null) {
-                saveToken(token)
+                saveLoginData(token, username)
                 navigateToMainActivity()
             } else {
                 Toast.makeText(this@LoginActivity, "Invalid username or password", Toast.LENGTH_SHORT).show()
@@ -95,10 +95,11 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveToken(token: String) {
+    private fun saveLoginData(token: String, username: String) {
         val sharedPreferences = getSharedPreferences("loginPrefs", MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putString("token", token)
+        editor.putString("loggedInUsername", username)
         editor.apply()
     }
 
