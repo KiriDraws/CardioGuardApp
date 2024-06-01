@@ -39,7 +39,7 @@ class RegisterActivity : AppCompatActivity() {
             val selectedAccountTypeId = radioGroupAccountType.checkedRadioButtonId
             val accountType = when (selectedAccountTypeId) {
                 R.id.radioButtonMedic -> "medic"
-                R.id.radioButtonPacient -> "patient"
+                R.id.radioButtonPacient -> "pacient"
                 else -> ""
             }
 
