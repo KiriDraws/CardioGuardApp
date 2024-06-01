@@ -7,6 +7,11 @@
         android:title="Home"
         app:showAsAction="ifRoom|withText" />
     <item
+        android:id="@+id/navigation_consultations"
+        android:icon="@drawable/pencil"
+        android:title="Consultatii"
+        app:showAsAction="ifRoom|withText" />
+    <item
         android:id="@+id/navigation_recommendations"
         android:icon="@drawable/pencil"
         android:title="Recomandări"
