@@ -1,4 +1,5 @@
 package com.example.cardioguard
+
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
@@ -11,7 +12,7 @@ import org.json.JSONObject
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import android.util.Log;
+import android.util.Log
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -37,23 +38,31 @@ class RegisterActivity : AppCompatActivity() {
             val confirmPassword = editTextConfirmPassword.text.toString()
             val selectedAccountTypeId = radioGroupAccountType.checkedRadioButtonId
             val accountType = when (selectedAccountTypeId) {
-                R.id.radioButtonMedic -> "Medic"
-                R.id.radioButtonPacient -> "Pacient"
+                R.id.radioButtonMedic -> "medic"
+                R.id.radioButtonPacient -> "patient"
                 else -> ""
             }
 
+            Log.d("RegisterActivity", "Register button clicked")
+            Log.d("RegisterActivity", "Input values: lastName=$lastName, firstName=$firstName, cnp=$cnp, username=$username, accountType=$accountType")
+
             if (lastName.isNotEmpty() && firstName.isNotEmpty() && cnp.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty() && accountType.isNotEmpty()) {
                 if (password == confirmPassword) {
+                    Log.d("RegisterActivity", "Starting RegisterTask")
+                    Log.d("RegisterActivity", "Account type: $accountType")
 
-                    RegisterTask(lastName, firstName, cnp, username, password, confirmPassword, accountType);
+                    RegisterTask(lastName, firstName, cnp, username, password, confirmPassword, accountType).execute()
                 } else {
+                    Log.d("RegisterActivity", "Passwords do not match")
                     Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
                 }
             } else {
+                Log.d("RegisterActivity", "Required information is missing")
                 Toast.makeText(this, "Please enter all the required information", Toast.LENGTH_SHORT).show()
             }
         }
     }
+
     private inner class RegisterTask(
         private val lastName: String,
         private val firstName: String,
@@ -66,9 +75,10 @@ class RegisterActivity : AppCompatActivity() {
 
         override fun doInBackground(vararg params: Void?): String? {
             try {
-                Log.d("tag4", "in doInBackground");
+                Log.d("RegisterTask", "Starting registration process")
                 val url = URL("https://api.cardioguard.eu/register")
-                val postData = "username=$username&password=$password&confirm_password=$confirmPassword&type_user=$accountType"
+                val postData = "last_name=$lastName&first_name=$firstName&cnp=$cnp&username=$username&password=$password&confirm_password=$confirmPassword&type_of_user=$accountType"
+                Log.d("RegisterTask", "Post data: $postData")
 
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
@@ -80,26 +90,34 @@ class RegisterActivity : AppCompatActivity() {
                 outputStream.flush()
                 outputStream.close()
 
-                if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                val responseCode = connection.responseCode
+                Log.d("RegisterTask", "Response Code: $responseCode")
+
+                return if (responseCode == HttpURLConnection.HTTP_OK) {
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
+                    Log.d("RegisterTask", "Response: $response")
                     val jsonResponse = JSONObject(response)
-                    return jsonResponse.getString("token")
+                    jsonResponse.getString("token")
                 } else {
-                    return null
+                    val errorResponse = connection.errorStream?.bufferedReader()?.use { it.readText() }
+                    Log.e("RegisterTask", "Error Response: $errorResponse")
+                    null
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                Log.e("RegisterTask", "Exception: ${e.message}")
                 return null
             }
         }
 
         override fun onPostExecute(token: String?) {
-            Log.d("post", "post execute");
-            println("something here");
+            Log.d("RegisterTask", "Post execute")
             if (token != null) {
+                Log.d("RegisterTask", "Registration successful, token: $token")
                 saveToken(token)
                 navigateToMainActivity()
             } else {
+                Log.e("RegisterTask", "Registration failed")
                 Toast.makeText(this@RegisterActivity, "Registration failed", Toast.LENGTH_SHORT).show()
             }
         }
