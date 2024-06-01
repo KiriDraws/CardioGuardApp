@@ -1,10 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/fragment_home.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:gravity="start">
+    tools:context=".HomeFragment">
+
+    <!-- Other views -->
 
     <Button
         android:id="@+id/buttonConnect"
@@ -12,36 +14,43 @@
         android:layout_height="wrap_content"
         android:text="Connect" />
 
+    <Button
+        android:id="@+id/buttonSimulate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Simulate"
+        android:layout_marginBottom="8dp"/>
+
     <TextView
         android:id="@+id/textStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Status: Disconnected"
-        android:paddingTop="16dp"/>
+        android:text="Status: Not connected" />
 
-    <!-- TextView to display EKG data -->
     <TextView
         android:id="@+id/ekgData"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="EKG Data"
-        android:paddingTop="16dp"/>
+        android:text="EKG Data" />
 
-    <!-- ImageView for the EKG GIF -->
     <ImageView
         android:id="@+id/ekgGif"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:src="@drawable/ekg" />
+        android:visibility="gone" />
 
-    <!-- TextView to display pulse data -->
     <TextView
         android:id="@+id/pulseData"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pulse History"
-        android:textSize="16sp"
-        android:paddingTop="16dp"/>
+        android:text="Pulse Data" />
+
+    <!-- New TextView for API response -->
+    <TextView
+        android:id="@+id/apiResponse"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="API Response"
+        android:visibility="gone" />
 
 </LinearLayout>

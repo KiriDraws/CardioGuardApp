@@ -3,22 +3,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
     android:gravity="start">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Consultatii"
-        android:textSize="24sp"
-        android:paddingBottom="16dp"/>
+        android:text="Consultatii medicale"
+        android:textSize="24sp" />
     <TextView
         android:id="@+id/welcomeTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello, User"
-        android:textSize="18sp"
-        android:paddingBottom="16dp"/>
+        android:textSize="18sp" />
     <TextView
         android:id="@+id/consultationsTextView"
         android:layout_width="wrap_content"
