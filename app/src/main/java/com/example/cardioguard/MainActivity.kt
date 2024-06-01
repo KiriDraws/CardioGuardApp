@@ -3,7 +3,6 @@ package com.example.cardioguard
 import android.Manifest
 import android.widget.Toast
 import android.content.SharedPreferences
-import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
@@ -20,14 +19,11 @@ import java.util.UUID
 import java.net.HttpURLConnection
 import java.net.URL
 import org.json.JSONObject
-import android.os.Build
 import android.view.View
 import android.widget.ImageView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AppCompatActivity
-import com.example.cardioguard.ui.theme.home.HomeFragment
-import com.example.cardioguard.ui.theme.recommendations.RecommendationsFragment
 import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
 import java.util.*

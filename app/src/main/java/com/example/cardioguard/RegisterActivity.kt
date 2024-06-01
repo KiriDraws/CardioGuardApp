@@ -4,7 +4,6 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
-import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +11,7 @@ import org.json.JSONObject
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import android.util.Log;
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -44,8 +44,8 @@ class RegisterActivity : AppCompatActivity() {
 
             if (lastName.isNotEmpty() && firstName.isNotEmpty() && cnp.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty() && accountType.isNotEmpty()) {
                 if (password == confirmPassword) {
-                    // Execute the registration task
-                    RegisterTask(lastName, firstName, cnp, username, password, confirmPassword, accountType).execute()
+
+                    RegisterTask(lastName, firstName, cnp, username, password, confirmPassword, accountType);
                 } else {
                     Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
                 }
@@ -54,7 +54,6 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
     }
-
     private inner class RegisterTask(
         private val lastName: String,
         private val firstName: String,
@@ -67,6 +66,7 @@ class RegisterActivity : AppCompatActivity() {
 
         override fun doInBackground(vararg params: Void?): String? {
             try {
+                Log.d("tag4", "in doInBackground");
                 val url = URL("https://api.cardioguard.eu/register")
                 val postData = "username=$username&password=$password&confirm_password=$confirmPassword&type_user=$accountType"
 
@@ -94,6 +94,8 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         override fun onPostExecute(token: String?) {
+            Log.d("post", "post execute");
+            println("something here");
             if (token != null) {
                 saveToken(token)
                 navigateToMainActivity()

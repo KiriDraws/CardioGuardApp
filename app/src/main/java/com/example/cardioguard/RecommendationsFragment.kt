@@ -1,4 +1,4 @@
-package com.example.cardioguard.ui.theme.recommendations
+package com.example.cardioguard
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

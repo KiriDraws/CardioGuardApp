@@ -1,4 +1,4 @@
-package com.example.cardioguard.ui.theme.home
+package com.example.cardioguard
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
