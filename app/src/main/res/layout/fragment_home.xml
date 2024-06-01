@@ -3,11 +3,45 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center">
+    android:padding="16dp"
+    android:gravity="start">
 
-    <TextView
+    <Button
+        android:id="@+id/buttonConnect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Home"
-        android:textSize="24sp"/>
+        android:text="Connect" />
+
+    <TextView
+        android:id="@+id/textStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Status: Disconnected"
+        android:paddingTop="16dp"/>
+
+    <!-- TextView to display EKG data -->
+    <TextView
+        android:id="@+id/ekgData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="EKG Data"
+        android:paddingTop="16dp"/>
+
+    <!-- ImageView for the EKG GIF -->
+    <ImageView
+        android:id="@+id/ekgGif"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:src="@drawable/ekg" />
+
+    <!-- TextView to display pulse data -->
+    <TextView
+        android:id="@+id/pulseData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pulse History"
+        android:textSize="16sp"
+        android:paddingTop="16dp"/>
+
 </LinearLayout>

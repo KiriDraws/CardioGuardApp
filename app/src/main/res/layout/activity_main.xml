@@ -5,52 +5,9 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <FrameLayout
-        android:id="@+id/fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <Button
-        android:id="@+id/buttonConnect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Connect"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"/>
-
-    <TextView
-        android:id="@+id/textStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Status: Disconnected"
-        android:layout_below="@id/buttonConnect"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"/>
-
-    <!-- TextView to display EKG data -->
-    <TextView
-        android:id="@+id/ekgData"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="EKG Data"
-        android:layout_below="@id/textStatus"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"/>
-
-    <!-- ImageView for the logo -->
-    <ImageView
-        android:id="@+id/imageViewLogo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/cardioguard"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp" /> <!-- Adjust margin as needed -->
-
-
     <!-- FrameLayout to hold fragment content -->
     <FrameLayout
-        android:id="@+id/nav_host_fragment"
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/bottom_navigation" />
@@ -65,23 +22,14 @@
         app:itemTextColor="@color/bottom_nav_item_color"
         app:menu="@menu/bottom_nav_menu" />
 
+    <!-- ImageView for the logo -->
     <ImageView
-        android:id="@+id/ekgGif"
+        android:id="@+id/imageViewLogo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/ekgData"
-        android:visibility="gone"
-        android:src="@drawable/ekg" />
-
-    <!-- TextView to display EKG String -->
-    <TextView
-        android:id="@+id/pulseData"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Pulse History"
+        android:src="@drawable/cardioguard"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/ekgGif"
-        android:textSize="16sp"
-        />
+        android:layout_marginBottom="16dp" /> <!-- Adjust margin as needed -->
 
 </RelativeLayout>

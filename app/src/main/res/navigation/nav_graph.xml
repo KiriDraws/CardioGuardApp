@@ -6,10 +6,14 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="com.example.cardioguard.ui.theme.HomeFragment"
+        android:name="com.example.cardioguard.HomeFragment"
         android:label="Home" />
     <fragment
         android:id="@+id/navigation_recommendations"
-        android:name="com.example.cardioguard.ui.theme.RecommendationsFragment"
+        android:name="com.example.cardioguard.RecommendationsFragment"
         android:label="Recomandari" />
+    <fragment
+        android:id="@+id/navigation_consulations"
+        android:name="com.example.cardioguard.ConsultationsFragment"
+        android:label="Consultatii" />
 </navigation>

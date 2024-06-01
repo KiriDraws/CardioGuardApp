@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="start">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Consultatii"
+        android:textSize="24sp"
+        android:paddingBottom="16dp"/>
+    <TextView
+        android:id="@+id/welcomeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello, User"
+        android:textSize="18sp"
+        android:paddingBottom="16dp"/>
+    <TextView
+        android:id="@+id/consultationsTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Consultatii will appear here"
+        android:textSize="16sp"
+        android:gravity="start"
+        android:textAlignment="viewStart"/>
+</LinearLayout>
