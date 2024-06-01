@@ -1,10 +1,12 @@
 package com.example.cardioguard
 
 import android.Manifest
+import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.AsyncTask
 import android.os.Bundle
@@ -31,7 +33,7 @@ import kotlin.random.Random
 
 class HomeFragment : Fragment() {
 
-    // UI elements
+    // Declarații pentru elementele UI
     private lateinit var buttonConnect: Button
     private lateinit var buttonSimulate: Button
     private lateinit var textStatus: TextView
@@ -40,44 +42,44 @@ class HomeFragment : Fragment() {
     private lateinit var pulseDataTextView: TextView
     private lateinit var apiResponseTextView: TextView
 
-    // Constants for Bluetooth connection
-    private val DEVICE_ADDRESS = "00:23:02:34:DC:96"
-    private val MY_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-    private val REQUEST_ENABLE_BLUETOOTH = 1
-    private val REQUEST_PERMISSION_BLUETOOTH = 2
-    private val READ_DELAY_MILLISECONDS = 4000L // 4 seconds delay
+    // Constante pentru conexiunea Bluetooth
+    private val DEVICE_ADDRESS = "00:23:02:34:DC:96" // Adresa dispozitivului Bluetooth
+    private val MY_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB") // UUID pentru conexiunea Bluetooth
+    private val REQUEST_ENABLE_BLUETOOTH = 1 // Cod de solicitare pentru activarea Bluetooth
+    private val REQUEST_PERMISSION_BLUETOOTH = 2 // Cod de solicitare pentru permisiuni Bluetooth
+    private val READ_DELAY_MILLISECONDS = 4000L // 4 secunde întârziere pentru citire
 
-    // Bluetooth-related variables
-    private var bluetoothAdapter: BluetoothAdapter? = null
-    private var bluetoothSocket: BluetoothSocket? = null
-    private var bluetoothDevice: BluetoothDevice? = null
-    private var inputStream: InputStream? = null
+    // Variabile legate de Bluetooth
+    private var bluetoothAdapter: BluetoothAdapter? = null // Adaptorul Bluetooth
+    private var bluetoothSocket: BluetoothSocket? = null // Socketul Bluetooth
+    private var bluetoothDevice: BluetoothDevice? = null // Dispozitivul Bluetooth
+    private var inputStream: InputStream? = null // Fluxul de intrare
 
-    // Handler to manage repeated tasks
+    // Handler pentru gestionarea task-urilor repetate
     private val handler = Handler()
     private val readRunnable = object : Runnable {
         override fun run() {
-            readDataFromBluetooth()
+            readDataFromBluetooth() // Citirea datelor de la Bluetooth
         }
     }
 
-    private var dataSent = false  // Flag to track data sending
-    private var userToken: String? = null
-    private val ekgValuesList = mutableListOf<String>()
-    private var pulseValues = mutableListOf<String>()
-    private var startTime: Long = 0
-    private var pulseIndex = 0
-    private val collectedPulseData = mutableListOf<String>()
-    private var isSimulating = false
+    private var dataSent = false // Flag pentru a urmări trimiterea datelor
+    private var userToken: String? = null // Tokenul utilizatorului pentru autentificare
+    private val ekgValuesList = mutableListOf<String>() // Listă pentru valorile EKG
+    private var pulseValues = mutableListOf<String>() // Listă pentru valorile pulsului
+    private var startTime: Long = 0 // Timpul de start
+    private var pulseIndex = 0 // Indexul pentru valorile pulsului
+    private val collectedPulseData = mutableListOf<String>() // Listă pentru valorile colectate ale pulsului
+    private var isSimulating = false // Flag pentru simulare
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
+        // Inflați layout-ul pentru acest fragment
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
-        // Initialize UI elements
+        // Inițializați elementele UI
         buttonConnect = view.findViewById(R.id.buttonConnect)
         buttonSimulate = view.findViewById(R.id.buttonSimulate)
         textStatus = view.findViewById(R.id.textStatus)
@@ -86,26 +88,27 @@ class HomeFragment : Fragment() {
         pulseDataTextView = view.findViewById(R.id.pulseData)
         apiResponseTextView = view.findViewById(R.id.apiResponse)
 
-        // Get the default Bluetooth adapter
+        // Obțineți adaptorul Bluetooth implicit
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
-        // Set up button click listeners
+        // Setează listener-ul pentru click pe butonul de conectare
         buttonConnect.setOnClickListener {
             if (bluetoothSocket == null || !bluetoothSocket!!.isConnected) {
-                // If Bluetooth is not connected, check permissions and connect
+                // Dacă Bluetooth-ul nu este conectat, verificați permisiunile și conectați-vă
                 if (checkBluetoothPermission()) {
                     checkBluetoothEnabled()
                 } else {
                     requestBluetoothPermission()
                 }
             } else {
-                // If Bluetooth is connected, disconnect
+                // Dacă Bluetooth-ul este conectat, deconectați-vă
                 disconnectFromDevice()
             }
         }
 
+        // Setează listener-ul pentru click pe butonul de simulare
         buttonSimulate.setOnClickListener {
-            // Toggle simulation on button click
+            // Comutați simularea la click pe buton
             if (isSimulating) {
                 stopSimulation()
             } else {
@@ -113,7 +116,7 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Get the user token from SharedPreferences
+        // Obțineți token-ul utilizatorului din SharedPreferences
         val sharedPreferences = requireActivity().getSharedPreferences("loginPrefs", Context.MODE_PRIVATE)
         userToken = sharedPreferences.getString("token", null)
 
@@ -122,7 +125,7 @@ class HomeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // Remove callbacks and close streams and sockets on view destruction
+        // Elimină callback-urile și închide fluxurile și socket-urile la distrugerea view-ului
         handler.removeCallbacks(readRunnable)
         handler.removeCallbacks(simulateDataRunnable)
         try {
@@ -134,7 +137,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun checkBluetoothPermission(): Boolean {
-        // Check if Bluetooth permission is granted
+        // Verificați dacă permisiunea pentru Bluetooth este acordată
         return ContextCompat.checkSelfPermission(
             requireContext(),
             Manifest.permission.BLUETOOTH
@@ -142,7 +145,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun requestBluetoothPermission() {
-        // Request Bluetooth permission if not granted
+        // Solicită permisiunea pentru Bluetooth dacă nu este acordată
         ActivityCompat.requestPermissions(
             requireActivity(),
             arrayOf(Manifest.permission.BLUETOOTH),
@@ -153,45 +156,44 @@ class HomeFragment : Fragment() {
     private fun checkBluetoothEnabled() {
         try {
             if (bluetoothAdapter == null) {
-                // Bluetooth is not supported on this device
+                // Bluetooth nu este suportat pe acest dispozitiv
                 textStatus.text = "Bluetooth not supported"
             } else if (!bluetoothAdapter!!.isEnabled) {
-                // Bluetooth is not enabled, request to enable it
-                ActivityCompat.requestPermissions(
-                    requireActivity(),
-                    arrayOf(Manifest.permission.BLUETOOTH_ADMIN),
-                    REQUEST_ENABLE_BLUETOOTH
-                )
+                // Bluetooth nu este activat, sfătuiți utilizatorul să-l activeze
+                Toast.makeText(requireContext(), "Please turn on Bluetooth", Toast.LENGTH_SHORT).show()
+                // Opțional, solicitați activarea Bluetooth programatic
+                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BLUETOOTH)
             } else {
-                // Bluetooth is enabled, proceed with connecting to the device
+                // Bluetooth este activat, continuați cu conectarea la dispozitiv
                 connectToDevice()
             }
         } catch (e: SecurityException) {
-            // Handle SecurityException, usually occurs when permission is denied at runtime
+            // Gestionați SecurityException, apare de obicei când permisiunea este refuzată la runtime
             textStatus.text = "Permission denied: Bluetooth"
         }
     }
 
     private fun connectToDevice() {
-        // Get the Bluetooth device using the address
+        // Obțineți dispozitivul Bluetooth folosind adresa
         bluetoothDevice = bluetoothAdapter?.getRemoteDevice(DEVICE_ADDRESS)
 
         try {
-            // Create a socket to connect to the device
+            // Creați un socket pentru a vă conecta la dispozitiv
             bluetoothSocket = bluetoothDevice?.createRfcommSocketToServiceRecord(MY_UUID)
-            bluetoothSocket?.connect()
+            bluetoothSocket?.connect() // Conectați-vă la socket
             textStatus.text = "Status: Connected"
             buttonConnect.text = "Disconnect"
             ekgGif.visibility = View.VISIBLE
-            // Load the GIF using Glide
+            // Încărcați GIF-ul folosind Glide
             Glide.with(this).asGif().load(R.drawable.ekg).into(ekgGif)
-            inputStream = bluetoothSocket?.inputStream
-            startReadingData()
+            inputStream = bluetoothSocket?.inputStream // Obțineți fluxul de intrare
+            startReadingData() // Începeți citirea datelor
         } catch (e: IOException) {
             textStatus.text = "Status: Connection Failed"
             e.printStackTrace()
             try {
-                bluetoothSocket?.close()
+                bluetoothSocket?.close() // Închideți socket-ul în caz de eroare
             } catch (closeException: IOException) {
                 closeException.printStackTrace()
             }
@@ -200,7 +202,7 @@ class HomeFragment : Fragment() {
 
     private fun disconnectFromDevice() {
         try {
-            // Remove callbacks and close streams and sockets
+            // Elimină callback-urile și închide fluxurile și socket-urile
             handler.removeCallbacks(readRunnable)
             inputStream?.close()
             bluetoothSocket?.close()
@@ -208,15 +210,14 @@ class HomeFragment : Fragment() {
             textStatus.text = "Status: Disconnected"
             buttonConnect.text = "Connect"
             ekgGif.visibility = View.GONE
-            dataSent = false  // Reset the flag when disconnected
-            ekgValuesList.clear() // Clear the list when disconnected
-            pulseValues.clear() // Clear the pulse values list when disconnected
+            dataSent = false  // Resetați flag-ul la deconectare
+            ekgValuesList.clear() // Goliți lista la deconectare
+            pulseValues.clear() // Goliți lista valorilor pulsului la deconectare
         } catch (e: IOException) {
             e.printStackTrace()
             textStatus.text = "Status: Disconnection Failed"
         }
     }
-
     private fun startReadingData() {
         // Start reading data from Bluetooth
         handler.postDelayed(readRunnable, READ_DELAY_MILLISECONDS)
