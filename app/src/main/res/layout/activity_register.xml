@@ -73,4 +73,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Inregistrare" />
+
+    <TextView
+        android:id="@+id/textViewApiResponse"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="@android:color/holo_red_dark"
+        android:visibility="gone"
+        android:layout_marginTop="16dp" />
+
 </LinearLayout>

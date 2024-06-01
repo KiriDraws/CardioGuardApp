@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONObject
@@ -15,6 +16,8 @@ import java.net.URL
 import android.util.Log
 
 class RegisterActivity : AppCompatActivity() {
+
+    private lateinit var textViewApiResponse: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +31,7 @@ class RegisterActivity : AppCompatActivity() {
         val editTextConfirmPassword = findViewById<EditText>(R.id.editTextConfirmPassword)
         val radioGroupAccountType = findViewById<RadioGroup>(R.id.radioGroupAccountType)
         val buttonRegister = findViewById<Button>(R.id.buttonRegister)
+        textViewApiResponse = findViewById(R.id.textViewApiResponse)
 
         buttonRegister.setOnClickListener {
             val lastName = editTextLastName.text.toString()
@@ -71,10 +75,10 @@ class RegisterActivity : AppCompatActivity() {
         private val password: String,
         private val confirmPassword: String,
         private val accountType: String
-    ) : AsyncTask<Void, Void, String?>() {
+    ) : AsyncTask<Void, Void, Pair<String?, String?>>() {
 
-        override fun doInBackground(vararg params: Void?): String? {
-            try {
+        override fun doInBackground(vararg params: Void?): Pair<String?, String?> {
+            return try {
                 Log.d("RegisterTask", "Starting registration process")
                 val url = URL("https://api.cardioguard.eu/register")
                 val postData = "last_name=$lastName&first_name=$firstName&cnp=$cnp&username=$username&password=$password&confirm_password=$confirmPassword&type_of_user=$accountType"
@@ -85,39 +89,42 @@ class RegisterActivity : AppCompatActivity() {
                 connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
                 connection.doOutput = true
 
-                val outputStream: OutputStream = connection.outputStream
-                outputStream.write(postData.toByteArray())
-                outputStream.flush()
-                outputStream.close()
+                connection.outputStream.use { outputStream ->
+                    outputStream.write(postData.toByteArray())
+                    outputStream.flush()
+                }
 
                 val responseCode = connection.responseCode
                 Log.d("RegisterTask", "Response Code: $responseCode")
 
-                return if (responseCode == HttpURLConnection.HTTP_OK) {
+                if (responseCode == HttpURLConnection.HTTP_OK) {
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
                     Log.d("RegisterTask", "Response: $response")
-                    val jsonResponse = JSONObject(response)
-                    jsonResponse.getString("token")
+                    val token = JSONObject(response).getString("token")
+                    Pair(token, null)
                 } else {
                     val errorResponse = connection.errorStream?.bufferedReader()?.use { it.readText() }
                     Log.e("RegisterTask", "Error Response: $errorResponse")
-                    null
+                    Pair(null, errorResponse)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 Log.e("RegisterTask", "Exception: ${e.message}")
-                return null
+                Pair(null, e.message)
             }
         }
 
-        override fun onPostExecute(token: String?) {
+        override fun onPostExecute(result: Pair<String?, String?>) {
             Log.d("RegisterTask", "Post execute")
+            val (token, error) = result
             if (token != null) {
                 Log.d("RegisterTask", "Registration successful, token: $token")
                 saveToken(token)
                 navigateToMainActivity()
             } else {
-                Log.e("RegisterTask", "Registration failed")
+                Log.e("RegisterTask", "Registration failed: $error")
+                textViewApiResponse.text = error
+                textViewApiResponse.visibility = TextView.VISIBLE
                 Toast.makeText(this@RegisterActivity, "Registration failed", Toast.LENGTH_SHORT).show()
             }
         }
