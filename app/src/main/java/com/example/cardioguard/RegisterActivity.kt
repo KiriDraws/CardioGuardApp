@@ -97,10 +97,11 @@ class RegisterActivity : AppCompatActivity() {
                 val responseCode = connection.responseCode
                 Log.d("RegisterTask", "Response Code: $responseCode")
 
-                if (responseCode == HttpURLConnection.HTTP_OK) {
+                if (responseCode == HttpURLConnection.HTTP_CREATED) {
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
                     Log.d("RegisterTask", "Response: $response")
-                    val token = JSONObject(response).getString("token")
+                    val jsonResponse = JSONObject(response)
+                    val token = jsonResponse.optString("token")
                     Pair(token, null)
                 } else {
                     val errorResponse = connection.errorStream?.bufferedReader()?.use { it.readText() }
@@ -114,6 +115,8 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
 
+
+
         override fun onPostExecute(result: Pair<String?, String?>) {
             Log.d("RegisterTask", "Post execute")
             val (token, error) = result
@@ -123,9 +126,9 @@ class RegisterActivity : AppCompatActivity() {
                 navigateToMainActivity()
             } else {
                 Log.e("RegisterTask", "Registration failed: $error")
-                textViewApiResponse.text = error
+                textViewApiResponse.text = error ?: "Unknown error"
                 textViewApiResponse.visibility = TextView.VISIBLE
-                Toast.makeText(this@RegisterActivity, "Registration failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@RegisterActivity, error ?: "Unknown error", Toast.LENGTH_SHORT).show()
             }
         }
     }
