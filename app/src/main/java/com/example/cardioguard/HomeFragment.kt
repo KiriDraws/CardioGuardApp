@@ -1,7 +1,6 @@
 package com.example.cardioguard
 
 import android.Manifest
-import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
@@ -291,12 +290,18 @@ class HomeFragment : Fragment() {
         }
         collectedPulseData.add(pulseData)
         pulseDataTextView.text = collectedPulseData.joinToString(separator = ", ", prefix = "", postfix = "") // Join pulse values with comma
+        Log.d("PulseData", "Timestamp for pulse data: $formattedDateTime")
+
     }
 
     private fun sendPulseDataToServer(pulse: String, pulseIndex: Int) {
         // Send pulse data to the server
         userToken?.let { token ->
-            SendEkgDataTask(token, pulse, "your_recorder_at_data").execute()
+            Log.d("SendEkgDataTask", "Sending pulse data to server: Pulse=$pulse, Index=$pulseIndex")
+
+            val currentTime = System.currentTimeMillis()
+            val formattedDateTime = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date(currentTime))
+            SendEkgDataTask(token, pulse, formattedDateTime).execute()
         } ?: run {
             Toast.makeText(requireContext(), "User not authenticated", Toast.LENGTH_SHORT).show()
         }
@@ -341,7 +346,7 @@ class HomeFragment : Fragment() {
     private inner class SendEkgDataTask(
         private val token: String,
         private val formattedValues: String,
-        private val recorderAt: String
+        private val recordedAt: String
     ) : AsyncTask<Void, Void, Pair<String?, String?>>() {
 
         override fun doInBackground(vararg params: Void?): Pair<String?, String?> {
@@ -350,22 +355,16 @@ class HomeFragment : Fragment() {
 
             return try {
                 // Set up the connection to the server
-                val url = URL("https://api.cardioguard.eu/pacient/ekg")
-                val postData = JSONObject().apply {
-                    put("ekg_values", formattedValues) // Using formattedValues instead of ekgValues
-                    put("recorder_at", recorderAt)
-                }.toString()
-
-                // Log the JSON object being sent
-                Log.d("SendEkgDataTask", "JSON being sent: $postData")
+                val url = URL("https://api.cardioguard.eu/patient/ekg")
+                val postData = "ekg_values=$formattedValues&recorded_at=$recordedAt"
 
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
-                connection.setRequestProperty("Content-Type", "application/json")
+                connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
                 connection.setRequestProperty("Authorization", "Bearer $token")
                 connection.doOutput = true
 
-                // Send the JSON data to the server
+                // Send the POST data to the server
                 connection.outputStream.use { outputStream ->
                     outputStream.write(postData.toByteArray())
                     outputStream.flush()
@@ -376,10 +375,14 @@ class HomeFragment : Fragment() {
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     // Read the response from the server
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
+                    Log.d("SendEkgDataTask", "Server response: $response")
+
                     Pair(response, null)
                 } else {
                     // Read the error response from the server
                     val errorResponse = connection.errorStream?.bufferedReader()?.use { it.readText() }
+                    Log.d("SendEkgDataTask", "Error response: $errorResponse")
+
                     Pair(null, errorResponse)
                 }
             } catch (e: Exception) {
@@ -400,6 +403,8 @@ class HomeFragment : Fragment() {
                 apiResponseTextView.visibility = TextView.VISIBLE
                 Toast.makeText(requireContext(), "Failed to send EKG data", Toast.LENGTH_SHORT).show()
             }
+            Log.d("SendEkgDataTask", "Server response: $response")
+            Log.d("SendEkgDataTask", "Error response: $error")
         }
     }
 }
