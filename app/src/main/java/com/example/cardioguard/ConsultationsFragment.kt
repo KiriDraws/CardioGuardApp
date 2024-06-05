@@ -2,8 +2,9 @@ package com.example.cardioguard
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.content.SharedPreferences
+import android.os.AsyncTask
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +13,10 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import org.json.JSONArray
 import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 
 class ConsultationsFragment : Fragment() {
 
@@ -21,6 +25,7 @@ class ConsultationsFragment : Fragment() {
 
     companion object {
         private const val REQUEST_PERMISSION_CODE = 1
+        private const val TAG = "ConsultationsFragment"
     }
 
     override fun onCreateView(
@@ -37,26 +42,20 @@ class ConsultationsFragment : Fragment() {
         // Retrieve the stored username
         val sharedPreferences = requireActivity().getSharedPreferences("loginPrefs", android.content.Context.MODE_PRIVATE)
         val username = sharedPreferences.getString("loggedInUsername", "User")
+        val token = sharedPreferences.getString("token", null)
 
         // Set the welcome message
         welcomeTextView.text = "Pacient, $username\n"
 
-        // Create a JSON object with test data for consultations
-        val jsonString = """
-            {
-                "consultations": "Consultatie la cardiolog pe data de 15 iunie 2023.\nConsultatie la endocrinolog pe data de 22 iulie 2023."
-            }
-        """
-
-        // Parse the JSON object
-        val jsonObject = JSONObject(jsonString)
-        val consultations = jsonObject.getString("consultations")
-
-        // Display the consultations
-        consultationsTextView.text = consultations
-
         // Check for permissions
         checkAndRequestPermissions()
+
+        // Fetch consultations if token is available
+        if (token != null) {
+            FetchConsultationsTask(token).execute()
+        } else {
+            Toast.makeText(requireContext(), "Please login first", Toast.LENGTH_SHORT).show()
+        }
 
         return view
     }
@@ -80,6 +79,64 @@ class ConsultationsFragment : Fragment() {
                 // Permission denied
                 Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private inner class FetchConsultationsTask(private val token: String) : AsyncTask<Void, Void, String?>() {
+
+        override fun doInBackground(vararg params: Void?): String? {
+            try {
+                val url = URL("https://api.cardioguard.eu/patient/consultations")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Authorization", "Bearer $token")
+
+                val responseCode = connection.responseCode
+                Log.d(TAG, "Response Code: $responseCode")
+
+                return if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val response = connection.inputStream.bufferedReader().use { it.readText() }
+                    Log.d(TAG, "Response: $response")
+                    response
+                } else {
+                    val errorResponse = connection.errorStream.bufferedReader().use { it.readText() }
+                    Log.e(TAG, "Error Response: $errorResponse")
+                    null
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e(TAG, "Exception: ${e.message}")
+                return null
+            }
+        }
+
+        override fun onPostExecute(result: String?) {
+            if (result != null) {
+                displayConsultations(result)
+            } else {
+                Toast.makeText(requireContext(), "Failed to fetch consultations", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun displayConsultations(consultationsJson: String) {
+        try {
+            val jsonObject = JSONObject(consultationsJson)
+            val consultationsArray = jsonObject.getJSONArray("data")
+            val consultationsList = StringBuilder()
+
+            for (i in 0 until consultationsArray.length()) {
+                val consultation = consultationsArray.getJSONObject(i)
+                consultationsList.append("Date: ${consultation.getString("consultation_date")}\n")
+                consultationsList.append("Doctor: ${consultation.getString("from")}\n")
+               
+            }
+
+            consultationsTextView.text = consultationsList.toString()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e(TAG, "Error parsing consultations data: ${e.message}")
+            Toast.makeText(requireContext(), "Error parsing consultations data", Toast.LENGTH_SHORT).show()
         }
     }
 }
