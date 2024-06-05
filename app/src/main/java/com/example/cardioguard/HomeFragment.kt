@@ -225,7 +225,7 @@ class HomeFragment : Fragment() {
 
     private fun readDataFromBluetooth() {
         val buffer = ByteArray(1024)
-        var bytes: Int
+        val bytes: Int
         val dataBuilder = StringBuilder()
         try {
             // Read data from the input stream
