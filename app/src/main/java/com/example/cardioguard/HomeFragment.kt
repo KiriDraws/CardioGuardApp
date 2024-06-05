@@ -283,7 +283,7 @@ class HomeFragment : Fragment() {
         val formattedDateTime = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date(currentTime))
         val pulseData = if (collectedPulseData.isEmpty()) {
             // For the first set of pulse values, display the timestamp as a title
-            "Pulse values read at $formattedDateTime: $pulseValues"
+            "Pulse values were read & sent to the server at $formattedDateTime: $pulseValues"
         } else {
             // For subsequent sets of pulse values, only display the pulse values in a single row
             pulseValues
@@ -401,7 +401,7 @@ class HomeFragment : Fragment() {
             } else {
                 apiResponseTextView.text = error
                 apiResponseTextView.visibility = TextView.VISIBLE
-                Toast.makeText(requireContext(), "Failed to send EKG data", Toast.LENGTH_SHORT).show()
+
             }
             Log.d("SendEkgDataTask", "Server response: $response")
             Log.d("SendEkgDataTask", "Error response: $error")
