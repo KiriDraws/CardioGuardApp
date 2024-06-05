@@ -129,7 +129,7 @@ class ConsultationsFragment : Fragment() {
                 val consultation = consultationsArray.getJSONObject(i)
                 consultationsList.append("Date: ${consultation.getString("consultation_date")}\n")
                 consultationsList.append("Doctor: ${consultation.getString("from")}\n")
-               
+
             }
 
             consultationsTextView.text = consultationsList.toString()
